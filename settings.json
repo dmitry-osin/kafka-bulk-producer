@@ -1,0 +1,17 @@
+{
+  "bootstrap": "localhost:9092",
+  "topic": "abc",
+  "count": "400000",
+  "batch": "1000",
+  "template": "C:/Users/Admin/Sources/_python/kafka-bulk-producer/template_example.json",
+  "log_file": "C:/Users/Admin/Sources/_python/kafka-bulk-producer/logs/abc.log",
+  "transactional_id": "kafka-bulk-producer",
+  "security_protocol": "PLAINTEXT",
+  "sasl_mechanism": "PLAIN",
+  "sasl_username": "",
+  "sasl_password": "",
+  "ssl_ca_location": "",
+  "ssl_cert_location": "",
+  "ssl_key_location": "",
+  "ssl_key_password": ""
+}

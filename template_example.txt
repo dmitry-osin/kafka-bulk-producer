@@ -1,0 +1,14 @@
+{
+  "id": "{genUUID}",
+  "user_id": {genInt#6},
+  "amount": {genFloat#4},
+  "currency": "USD",
+  "reference": "{genString#12}",
+  "transaction_date": "{genDateTime#YYYY-MM-DD HH:mm:ss}",
+  "effective_date": "{genDate#YYYY-MM-DD}",
+  "processed_time": "{genTime#HH:mm:ss}",
+  "arrive_date_time": "{genDateTime}",
+  "arrive_date": "{genDate}",
+  "arrive_time": "{genTime}",
+  "card_id": "{getFrom(card_ids.txt)#6}"
+}
