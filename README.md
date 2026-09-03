@@ -91,6 +91,8 @@ The JSON template supports dynamic placeholders that are replaced with random va
 | Placeholder | Example | Description |
 |-------------|---------|-------------|
 | `{genInt#length}` | `{genInt#6}` | Random integer with the specified number of digits |
+| `{genInt(min-max)}` | `{genInt(1-60)}` | Random integer in the given inclusive range |
+| `{genInt#length(min-max)}` | `{genInt#3(1-999)}` | Random integer in range, zero-padded to `length` digits (e.g. `007`) |
 | `{genFloat#length}` | `{genFloat#4}` | Random float; `length` sets the integer-part digit count (2 decimal places are always added) |
 | `{genString#length}` | `{genString#12}` | Random alphanumeric string of the given length |
 | `{genDate#format}` | `{genDate#YYYY-MM-DD}`, </br> `{genDate}` | Random date within the last year |
@@ -130,7 +132,12 @@ Create a any text file:
   "arrive_date_time": "{genDateTime}",
   "arrive_date": "{genDate}",
   "arrive_time": "{genTime}",
-  "card_id": "{getFrom(card_ids.txt)#6}"
+  "card_id": "{getFrom(card_ids.txt)#6}",
+  "is_prepurchase": {genBoolean},
+  "is_reversal": {genBoolean},
+  "status": "{getOneOf{Approved,Declined,Pending}}",
+  "merchant_category": {genInt(1-99)},
+  "terminal_code": {genInt#3(1-999)}
 }
 ```
 
@@ -149,7 +156,12 @@ Example output with default formats:
   "arrive_date_time": "2025-08-15T14:32:07.042+03",
   "arrive_date": "2025-08-15",
   "arrive_time": "01:45:02",
-  "card_id": "1234-4567-8901-0000"
+  "card_id": "1234-4567-8901-0000",
+  "is_prepurchase": false,
+  "is_reversal": true,
+  "status": "Approved",
+  "merchant_category": 42,
+  "terminal_code": 007
 }
 ```
 

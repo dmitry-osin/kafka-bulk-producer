@@ -31,9 +31,8 @@ if _VENDOR_PATH not in sys.path and os.path.isdir(_VENDOR_PATH):
     sys.path.insert(0, _VENDOR_PATH)
 
 TEMPLATE_PATTERN = re.compile(
-    r"\{(genInt|genFloat|genString|genDate|genTime|genDateTime|genUUID|genBoolean|getFrom)"
-    r"(?:\(([^)]*)\))?"
-    r"(?:#([^}]+))?\}"
+    r"\{(genInt|genFloat|genString|genDateTime|genDate|genTime|genUUID|genBoolean|getFrom)"
+    r"([^}]*)\}"
 )
 
 GET_ONE_OF_PATTERN = re.compile(r"\{getOneOf\{([^}]*)\}\}")
@@ -192,7 +191,18 @@ def _build_producer_config(
     return config
 
 
-def _generate_int(length_str: str | None) -> str:
+def _generate_int(range_str: str | None, length_str: str | None) -> str:
+    if range_str:
+        low, high = (int(v) for v in range_str.split("-", 1))
+        if low > high:
+            low, high = high, low
+        result = str(random.randint(low, high))
+        if length_str:
+            width = int(length_str)
+            if width > len(result):
+                result = result.zfill(width)
+        return result
+
     length = int(length_str) if length_str else 5
     if length < 1:
         return "0"
@@ -201,7 +211,7 @@ def _generate_int(length_str: str | None) -> str:
     return str(random.randint(lower, upper))
 
 
-def _generate_float(length_str: str | None) -> str:
+def _generate_float(_range: str | None, length_str: str | None) -> str:
     length = int(length_str) if length_str else 5
     if length < 1:
         return "0.00"
@@ -212,27 +222,27 @@ def _generate_float(length_str: str | None) -> str:
     return f"{integer_part}.{decimal_part:02d}"
 
 
-def _generate_string(length_str: str | None) -> str:
+def _generate_string(_range: str | None, length_str: str | None) -> str:
     length = int(length_str) if length_str else 10
     chars = string.ascii_letters + string.digits
     return "".join(random.choices(chars, k=length))
 
 
-def _generate_date(format_str: str | None) -> str:
+def _generate_date(_range: str | None, format_str: str | None) -> str:
     fmt = _to_strftime_format(format_str) if format_str else "%Y-%m-%d"
     days_back = random.randint(0, 365)
     dt = datetime.now() - timedelta(days=days_back)
     return dt.strftime(fmt)
 
 
-def _generate_time(format_str: str | None) -> str:
+def _generate_time(_range: str | None, format_str: str | None) -> str:
     fmt = _to_strftime_format(format_str) if format_str else "%H:%M:%S"
     seconds = random.randint(0, 86399)
     dt = datetime.min + timedelta(seconds=seconds)
     return dt.strftime(fmt)
 
 
-def _generate_datetime(format_str: str | None) -> str:
+def _generate_datetime(_range: str | None, format_str: str | None) -> str:
     days_back = random.randint(0, 365)
     seconds_back = random.randint(0, 86399)
     dt = datetime.now() - timedelta(days=days_back, seconds=seconds_back)
@@ -248,11 +258,11 @@ def _generate_datetime(format_str: str | None) -> str:
     return f"{dt.strftime('%Y-%m-%dT%H:%M:%S')}.{ms}{tz}"
 
 
-def _generate_uuid(_: str | None = None) -> str:
+def _generate_uuid(_range: str | None = None, _arg: str | None = None) -> str:
     return str(uuid.uuid4())
 
 
-def _generate_boolean(_: str | None = None) -> str:
+def _generate_boolean(_range: str | None = None, _arg: str | None = None) -> str:
     return random.choice(("true", "false"))
 
 
@@ -304,16 +314,25 @@ GENERATORS = {
 }
 
 
+_TAIL_PARENS = re.compile(r"\(([^)]*)\)")
+_TAIL_HASH = re.compile(r"#([^(]*)")
+
+
+def _split_tail(tail: str) -> tuple[str | None, str | None]:
+    parens_match = _TAIL_PARENS.search(tail)
+    parens = parens_match.group(1) if parens_match else None
+    hash_match = _TAIL_HASH.search(tail)
+    arg = hash_match.group(1) if hash_match else None
+    return parens, arg
+
+
 def _replace_variable(match: re.Match) -> str:
     name = match.group(1)
-    parens = match.group(2)
-    arg = match.group(3)
+    parens, arg = _split_tail(match.group(2))
     generator = GENERATORS.get(name)
     if generator is None:
         raise ValueError(f"Unknown template variable: {name}")
-    if parens is not None:
-        return generator(parens, arg)
-    return generator(arg)
+    return generator(parens, arg)
 
 
 def _replace_one_of(match: re.Match) -> str:
