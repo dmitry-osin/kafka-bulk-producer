@@ -110,6 +110,7 @@ The JSON template supports dynamic placeholders that are replaced with random va
 | `{genInt#length(min-max)}` | `{genInt#3(1-999)}` | Random integer in range, zero-padded to `length` digits (e.g. `007`) |
 | `{genFloat#length}` | `{genFloat#4}` | Random float; `length` sets the integer-part digit count (2 decimal places are always added) |
 | `{genString#length}` | `{genString#12}` | Random alphanumeric string of the given length |
+| `{genChar#length(charset)}` | `{genChar#1(A-Za-z)}` | Random character(s) from a set of ranges (e.g. `A-Z`, `a-z`, `0-9`) |
 | `{genDate#format}` | `{genDate#YYYY-MM-DD}`, </br> `{genDate}` | Random date within the last year |
 | `{genTime#format}` | `{genTime#HH:mm:ss}`, </br> `{genTime}` | Random time of day |
 | `{genDateTime#format}` | `{genDateTime#YYYY-MM-DD HH:mm:ss}`, </br> `{genDateTime}` | Random date and time within the last year |

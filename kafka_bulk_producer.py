@@ -31,7 +31,7 @@ if _VENDOR_PATH not in sys.path and os.path.isdir(_VENDOR_PATH):
     sys.path.insert(0, _VENDOR_PATH)
 
 TEMPLATE_PATTERN = re.compile(
-    r"\{(genInt|genFloat|genString|genDateTime|genDate|genTime|genUUID|genBoolean|getFrom)"
+    r"\{(genInt|genFloat|genString|genDateTime|genDate|genTime|genUUID|genBoolean|genChar|getFrom)"
     r"([^}]*)\}"
 )
 
@@ -266,6 +266,37 @@ def _generate_boolean(_range: str | None = None, _arg: str | None = None) -> str
     return random.choice(("true", "false"))
 
 
+def _parse_charset(spec: str) -> str:
+    chars: list[str] = []
+    i = 0
+    while i < len(spec):
+        if (
+            i + 2 < len(spec)
+            and spec[i] != "-"
+            and spec[i + 1] == "-"
+            and spec[i + 2] != "-"
+        ):
+            start, end = spec[i], spec[i + 2]
+            if start > end:
+                start, end = end, start
+            chars.extend(chr(c) for c in range(ord(start), ord(end) + 1))
+            i += 3
+        else:
+            chars.append(spec[i])
+            i += 1
+    return "".join(chars)
+
+
+def _generate_char(charset_str: str | None, length_str: str | None) -> str:
+    if not charset_str:
+        raise ValueError("genChar requires a character set, e.g. {genChar#1(A-Za-z)}")
+    charset = _parse_charset(charset_str)
+    if not charset:
+        raise ValueError(f"Empty character set for genChar: {charset_str}")
+    length = int(length_str) if length_str else 1
+    return "".join(random.choice(charset) for _ in range(length))
+
+
 def _generate_one_of(choices_str: str) -> str:
     choices = [c.strip().strip('"').strip("'") for c in choices_str.split(",")]
     choices = [c for c in choices if c]
@@ -310,6 +341,7 @@ GENERATORS = {
     "genDateTime": _generate_datetime,
     "genUUID": _generate_uuid,
     "genBoolean": _generate_boolean,
+    "genChar": _generate_char,
     "getFrom": _generate_from_file,
 }
 
