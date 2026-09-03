@@ -97,6 +97,8 @@ The JSON template supports dynamic placeholders that are replaced with random va
 | `{genTime#format}` | `{genTime#HH:mm:ss}`, </br> `{genTime}` | Random time of day |
 | `{genDateTime#format}` | `{genDateTime#YYYY-MM-DD HH:mm:ss}`, </br> `{genDateTime}` | Random date and time within the last year |
 | `{genUUID}` | `{genUUID}` | — | Random UUID v4 |
+| `{genBoolean}` | `{genBoolean}` | Random `true` or `false` |
+| `{getOneOf{...}}` | `{getOneOf{active,pending,inactive}}` | Random choice from a comma-separated list |
 
 ### Format tokens for dates
 

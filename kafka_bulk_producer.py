@@ -31,10 +31,12 @@ if _VENDOR_PATH not in sys.path and os.path.isdir(_VENDOR_PATH):
     sys.path.insert(0, _VENDOR_PATH)
 
 TEMPLATE_PATTERN = re.compile(
-    r"\{(genInt|genFloat|genString|genDate|genTime|genDateTime|genUUID|getFrom)"
+    r"\{(genInt|genFloat|genString|genDate|genTime|genDateTime|genUUID|genBoolean|getFrom)"
     r"(?:\(([^)]*)\))?"
     r"(?:#([^}]+))?\}"
 )
+
+GET_ONE_OF_PATTERN = re.compile(r"\{getOneOf\{([^}]*)\}\}")
 
 _LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
 
@@ -250,6 +252,18 @@ def _generate_uuid(_: str | None = None) -> str:
     return str(uuid.uuid4())
 
 
+def _generate_boolean(_: str | None = None) -> str:
+    return random.choice(("true", "false"))
+
+
+def _generate_one_of(choices_str: str) -> str:
+    choices = [c.strip().strip('"').strip("'") for c in choices_str.split(",")]
+    choices = [c for c in choices if c]
+    if not choices:
+        raise ValueError("getOneOf requires at least one choice")
+    return random.choice(choices)
+
+
 _file_cache: dict[str, list[str]] = {}
 _template_dir: str = ""
 
@@ -285,6 +299,7 @@ GENERATORS = {
     "genTime": _generate_time,
     "genDateTime": _generate_datetime,
     "genUUID": _generate_uuid,
+    "genBoolean": _generate_boolean,
     "getFrom": _generate_from_file,
 }
 
@@ -301,7 +316,12 @@ def _replace_variable(match: re.Match) -> str:
     return generator(arg)
 
 
+def _replace_one_of(match: re.Match) -> str:
+    return _generate_one_of(match.group(1))
+
+
 def generate_message(template: str) -> str:
+    template = GET_ONE_OF_PATTERN.sub(_replace_one_of, template)
     return TEMPLATE_PATTERN.sub(_replace_variable, template)
 
 
