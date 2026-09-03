@@ -35,7 +35,7 @@ TEMPLATE_PATTERN = re.compile(
     r"([^}]*)\}"
 )
 
-GET_ONE_OF_PATTERN = re.compile(r"\{getOneOf\{([^}]*)\}\}")
+GET_ONE_OF_PATTERN = re.compile(r"\{getOneOf\(([^)]*)\)\}")
 
 _LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
 

@@ -82,6 +82,21 @@ python kafka_bulk_producer.py \
 - For **SASL_PLAINTEXT** provide `-sasl-username` and `-sasl-password`.
 - For **SASL_SSL** provide both SASL credentials and SSL certificates.
 
+### Converting PFX/PKCS#12 to PEM
+
+If you have a Java keystore in **PFX/PKCS#12** format, use the bundled `pfx_to_pem.py` script (requires `openssl` on PATH):
+
+```bash
+python pfx_to_pem.py -in client.pfx -password changeit
+```
+
+This produces:
+- `cert.pem` — client certificate (for `-ssl-cert-location`)
+- `key.pem` — private key, unencrypted (for `-ssl-key-location`)
+- `ca.pem` — CA chain (for `-ssl-ca-location`), skipped if the PFX contains only one certificate
+
+Options: `-out-dir` (default: input file's directory), `-cert`, `-key`, `-ca` to rename the output files.
+
 ---
 
 ## Template Placeholders
@@ -100,7 +115,7 @@ The JSON template supports dynamic placeholders that are replaced with random va
 | `{genDateTime#format}` | `{genDateTime#YYYY-MM-DD HH:mm:ss}`, </br> `{genDateTime}` | Random date and time within the last year |
 | `{genUUID}` | `{genUUID}` | — | Random UUID v4 |
 | `{genBoolean}` | `{genBoolean}` | Random `true` or `false` |
-| `{getOneOf{...}}` | `{getOneOf{active,pending,inactive}}` | Random choice from a comma-separated list |
+| `{getOneOf(...)}` | `{getOneOf(active,pending,inactive)}` | Random choice from a comma-separated list |
 
 ### Format tokens for dates
 
@@ -135,7 +150,7 @@ Create a any text file:
   "card_id": "{getFrom(card_ids.txt)#6}",
   "is_prepurchase": {genBoolean},
   "is_reversal": {genBoolean},
-  "status": "{getOneOf{Approved,Declined,Pending}}",
+  "status": "{getOneOf(Approved,Declined,Pending)}",
   "merchant_category": {genInt(1-99)},
   "terminal_code": {genInt#3(1-999)}
 }
